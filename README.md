@@ -4,7 +4,7 @@ A sophisticated word prediction application powered by Long Short-Term Memory (L
 
 ## 🌟 Live Demo
 
-**[🚀 Deploy on Streamlit Cloud](https://your-app-name-here.streamlit.app)**
+**[🚀 Deploy on Streamlit Cloud](https://lstm-rnn-next-word-predictor-fj3vlsejmebvlekktcfjkt.streamlit.app/)**
 
 *Replace the link above with your actual Streamlit Cloud deployment URL*
 
