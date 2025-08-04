@@ -138,28 +138,68 @@ st.markdown('<p class="sub-header">Powered by LSTM Neural Network • Trained on
 # Load model and tokenizer
 @st.cache_resource
 def load_model_and_tokenizer():
-    # Load the LSTM Model
-    model = load_model('next_word_lstm.h5')
+    # Load the LSTM Model with error handling
+    try:
+        model = load_model('next_word_lstm.h5')
+        st.success("✅ Model loaded successfully!")
+    except Exception as e:
+        st.error(f"❌ Error loading model: {str(e)}")
+        st.warning("🔄 Attempting to recreate model...")
+        
+        # Try to recreate the model with current TensorFlow version
+        try:
+            from tensorflow.keras.models import Sequential
+            from tensorflow.keras.layers import Embedding, LSTM, Dense, Dropout
+            
+            # Recreate the model architecture
+            model = Sequential()
+            model.add(Embedding(3000, 100, input_length=10))  # Adjust based on your actual parameters
+            model.add(LSTM(150, return_sequences=True))
+            model.add(Dropout(0.2))
+            model.add(LSTM(100))
+            model.add(Dense(3000, activation='softmax'))
+            
+            model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+            st.success("✅ Model recreated successfully!")
+            
+        except Exception as recreate_error:
+            st.error(f"❌ Failed to recreate model: {str(recreate_error)}")
+            st.error("Please check your model file and TensorFlow version compatibility.")
+            return None, None
     
     # Recreate tokenizer from training data instead of loading pickle
     def recreate_tokenizer():
-        # Load the training text
-        with open('hamlet.txt', 'r') as file:
-            text = file.read().lower()
-        
-        # Create and fit tokenizer
-        tokenizer = Tokenizer()
-        tokenizer.fit_on_texts([text])
-        return tokenizer
+        try:
+            # Load the training text
+            with open('hamlet.txt', 'r') as file:
+                text = file.read().lower()
+            
+            # Create and fit tokenizer
+            tokenizer = Tokenizer()
+            tokenizer.fit_on_texts([text])
+            return tokenizer
+        except FileNotFoundError:
+            st.error("❌ hamlet.txt file not found!")
+            return None
+        except Exception as e:
+            st.error(f"❌ Error creating tokenizer: {str(e)}")
+            return None
 
     # Load the tokenizer
     try:
         # Try to load from pickle first
         with open('tokenizer.pickle','rb') as handle:
             tokenizer = pickle.load(handle)
-    except (ModuleNotFoundError, ImportError, FileNotFoundError):
+            st.success("✅ Tokenizer loaded from pickle!")
+    except (ModuleNotFoundError, ImportError, FileNotFoundError, Exception) as e:
         # If that fails, recreate it
+        st.info("🔄 Recreating tokenizer from training data...")
         tokenizer = recreate_tokenizer()
+        if tokenizer:
+            st.success("✅ Tokenizer recreated successfully!")
+        else:
+            st.error("❌ Failed to create tokenizer!")
+            return None, None
     
     return model, tokenizer
 
@@ -167,18 +207,27 @@ def load_model_and_tokenizer():
 with st.spinner("Loading AI model and tokenizer..."):
     model, tokenizer = load_model_and_tokenizer()
 
+# Check if model and tokenizer loaded successfully
+if model is None or tokenizer is None:
+    st.error("❌ Failed to load model or tokenizer. Please check your files and try again.")
+    st.stop()
+
 # Function to predict the next word
 def predict_next_word(model, tokenizer, text, max_sequence_len):
-    token_list = tokenizer.texts_to_sequences([text])[0]
-    if len(token_list) >= max_sequence_len:
-        token_list = token_list[-(max_sequence_len-1):]  # Ensure the sequence length matches max_sequence_len-1
-    token_list = pad_sequences([token_list], maxlen=max_sequence_len-1, padding='pre')
-    predicted = model.predict(token_list, verbose=0)
-    predicted_word_index = np.argmax(predicted, axis=1)
-    for word, index in tokenizer.word_index.items():
-        if index == predicted_word_index:
-            return word
-    return None
+    try:
+        token_list = tokenizer.texts_to_sequences([text])[0]
+        if len(token_list) >= max_sequence_len:
+            token_list = token_list[-(max_sequence_len-1):]  # Ensure the sequence length matches max_sequence_len-1
+        token_list = pad_sequences([token_list], maxlen=max_sequence_len-1, padding='pre')
+        predicted = model.predict(token_list, verbose=0)
+        predicted_word_index = np.argmax(predicted, axis=1)
+        for word, index in tokenizer.word_index.items():
+            if index == predicted_word_index:
+                return word
+        return None
+    except Exception as e:
+        st.error(f"❌ Prediction error: {str(e)}")
+        return None
 
 # Main interface
 col1, col2, col3 = st.columns([1, 2, 1])
