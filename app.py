@@ -1,10 +1,34 @@
 import streamlit as st
 import numpy as np
-import pickle
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.preprocessing.text import Tokenizer
-import time
+
+# Try to import optional dependencies
+try:
+    import pickle
+    PICKLE_AVAILABLE = True
+except ImportError:
+    PICKLE_AVAILABLE = False
+    st.warning("⚠️ Pickle not available, will recreate tokenizer")
+
+try:
+    from tensorflow.keras.models import load_model
+    from tensorflow.keras.preprocessing.sequence import pad_sequences
+    from tensorflow.keras.preprocessing.text import Tokenizer
+    TENSORFLOW_AVAILABLE = True
+except ImportError:
+    TENSORFLOW_AVAILABLE = False
+    st.error("❌ TensorFlow not available. Please install: pip install tensorflow")
+
+try:
+    import time
+    TIME_AVAILABLE = True
+except ImportError:
+    TIME_AVAILABLE = False
+    st.warning("⚠️ Time module not available")
+
+# Check if essential modules are available
+if not TENSORFLOW_AVAILABLE:
+    st.error("❌ TensorFlow is required for this app to work. Please install it.")
+    st.stop()
 
 # Page configuration
 st.set_page_config(
@@ -188,9 +212,12 @@ def load_model_and_tokenizer():
     # Load the tokenizer
     try:
         # Try to load from pickle first
-        with open('tokenizer.pickle','rb') as handle:
-            tokenizer = pickle.load(handle)
-            st.success("✅ Tokenizer loaded from pickle!")
+        if PICKLE_AVAILABLE:
+            with open('tokenizer.pickle','rb') as handle:
+                tokenizer = pickle.load(handle)
+                st.success("✅ Tokenizer loaded from pickle!")
+        else:
+            raise ImportError("Pickle not available")
     except (ModuleNotFoundError, ImportError, FileNotFoundError, Exception) as e:
         # If that fails, recreate it
         st.info("🔄 Recreating tokenizer from training data...")
@@ -255,7 +282,8 @@ with col2:
 # Prediction logic
 if predict_button and input_text.strip():
     with st.spinner("🤖 AI is thinking..."):
-        time.sleep(0.5)  # Add a small delay for better UX
+        if TIME_AVAILABLE:
+            time.sleep(0.5)  # Add a small delay for better UX
         
         max_sequence_len = model.input_shape[1] + 1
         next_word = predict_next_word(model, tokenizer, input_text, max_sequence_len)
@@ -388,7 +416,8 @@ with st.form("custom_examples"):
     
     if submit_custom and custom_input.strip():
         with st.spinner("🤖 AI is analyzing your phrase..."):
-            time.sleep(0.5)
+            if TIME_AVAILABLE:
+                time.sleep(0.5)
             
             max_sequence_len = model.input_shape[1] + 1
             next_word = predict_next_word(model, tokenizer, custom_input, max_sequence_len)

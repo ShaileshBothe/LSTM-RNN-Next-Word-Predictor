@@ -24,14 +24,24 @@ Make sure your repository contains these files:
 
 If you encounter pip installation errors:
 
-#### Option A: Use Simple Requirements (Recommended)
-Rename `requirements-simple.txt` to `requirements.txt`:
+#### Option A: Use Minimal Requirements (Recommended)
+Use the minimal requirements file:
+```bash
+cp requirements-minimal.txt requirements.txt
+```
+
+#### Option B: Use Simple Requirements
+Use the simple requirements file:
 ```bash
 cp requirements-simple.txt requirements.txt
 ```
 
-#### Option B: Use Specific Versions
-Use the current `requirements.txt` with specific versions.
+#### Option C: Manual Fix
+If you still get errors, manually edit `requirements.txt` to contain only:
+```
+streamlit
+tensorflow
+```
 
 ### 3. Deploy to Streamlit Cloud
 
