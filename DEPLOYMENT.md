@@ -12,24 +12,26 @@
 Make sure your repository contains these files:
 ```
 ├── app.py                 # Main Streamlit application
-├── requirements.txt       # Python dependencies
+├── requirements.txt       # Python dependencies (use requirements-simple.txt if needed)
+├── .streamlit/config.toml # Streamlit configuration
 ├── hamlet.txt            # Training data
 ├── next_word_lstm.h5     # Trained model (optional)
 ├── tokenizer.pickle      # Saved tokenizer (optional)
 └── README.md            # Project documentation
 ```
 
-### 2. Update requirements.txt
+### 2. Fix Pip Installation Issues
 
-The `requirements.txt` file should contain:
+If you encounter pip installation errors:
+
+#### Option A: Use Simple Requirements (Recommended)
+Rename `requirements-simple.txt` to `requirements.txt`:
+```bash
+cp requirements-simple.txt requirements.txt
 ```
-streamlit>=1.28.0
-tensorflow>=2.13.0,<2.15.0
-numpy>=1.21.0
-pandas>=1.5.0
-nltk>=3.8.0
-scikit-learn>=1.3.0
-```
+
+#### Option B: Use Specific Versions
+Use the current `requirements.txt` with specific versions.
 
 ### 3. Deploy to Streamlit Cloud
 
@@ -38,7 +40,7 @@ scikit-learn>=1.3.0
 3. **New App**: Click "New app"
 4. **Repository**: Select your GitHub repository
 5. **Main file path**: Enter `app.py`
-6. **Python version**: Select Python 3.9 or 3.10
+6. **Python version**: Select Python 3.9
 7. **Deploy**: Click "Deploy!"
 
 ### 4. Handle Model Loading Issues
@@ -60,6 +62,12 @@ If you want to use the saved model:
 
 ### 5. Troubleshooting Common Issues
 
+#### Issue: Pip Installation Error
+**Solution**: 
+1. Use `requirements-simple.txt` instead of `requirements.txt`
+2. Or try the specific versions in the current `requirements.txt`
+3. Make sure Python version is 3.9
+
 #### Issue: Model Loading Error
 **Solution**: The app will automatically recreate the model. This is normal and expected.
 
@@ -77,8 +85,28 @@ If you want to use the saved model:
 - Check that all files are in the repository
 - Verify `requirements.txt` syntax
 - Ensure `app.py` is the main file
+- Try Python 3.9 instead of 3.10
 
-### 6. Update Your README
+### 6. Alternative Deployment Steps
+
+If you continue to have issues:
+
+1. **Use minimal requirements**:
+   ```txt
+   streamlit
+   tensorflow
+   numpy
+   ```
+
+2. **Remove optional dependencies** from requirements.txt
+
+3. **Test locally first**:
+   ```bash
+   pip install -r requirements.txt
+   streamlit run app.py
+   ```
+
+### 7. Update Your README
 
 Once deployed, update your README.md with the actual deployment URL:
 
@@ -88,7 +116,7 @@ Once deployed, update your README.md with the actual deployment URL:
 **[🚀 Deploy on Streamlit Cloud](https://your-actual-app-name.streamlit.app)**
 ```
 
-### 7. Monitor Your App
+### 8. Monitor Your App
 
 - **Check logs**: Click "Manage app" in the bottom right
 - **View errors**: Check the logs for detailed error messages
@@ -113,4 +141,5 @@ If you continue to have issues:
 1. Check the Streamlit Cloud logs
 2. Verify all files are in the repository
 3. Test locally first with `streamlit run app.py`
-4. Consider using the model recreation approach (most reliable) 
+4. Consider using the model recreation approach (most reliable)
+5. Try the simple requirements file 
