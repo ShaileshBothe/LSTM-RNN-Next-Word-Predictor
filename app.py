@@ -165,7 +165,7 @@ def load_model_and_tokenizer():
     # Load the LSTM Model with error handling
     try:
         model = load_model('next_word_lstm.h5')
-        st.success("✅ Model loaded successfully!")
+        st.success("✅ Model loaded successfully from next_word_lstm.h5!")
     except Exception as e:
         st.error(f"❌ Error loading model: {str(e)}")
         st.warning("🔄 Attempting to recreate model...")
@@ -276,21 +276,29 @@ def predict_next_word(model, tokenizer, text, max_sequence_len):
         token_list = pad_sequences([token_list], maxlen=max_sequence_len-1, padding='pre')
         predicted = model.predict(token_list, verbose=0)
         
-        # Get top 3 predictions to avoid repetitive outputs
-        top_indices = np.argsort(predicted[0])[-3:][::-1]
+        # Get top 5 predictions to have more options
+        top_indices = np.argsort(predicted[0])[-5:][::-1]
         
-        # Filter out common repetitive words
-        repetitive_words = {'leads', 'the', 'and', 'to', 'of', 'a', 'in', 'is', 'it', 'that', 'with', 'as', 'for', 'his', 'this', 'but', 'they', 'have', 'had', 'what', 'said', 'each', 'which', 'she', 'do', 'how', 'their', 'if', 'will', 'up', 'other', 'about', 'out', 'many', 'then', 'them', 'these', 'so', 'some', 'her', 'would', 'make', 'like', 'into', 'him', 'time', 'two', 'more', 'go', 'no', 'way', 'could', 'my', 'than', 'first', 'been', 'call', 'who', 'its', 'now', 'find', 'long', 'down', 'day', 'did', 'get', 'come', 'made', 'may', 'part'}
+        # Filter out common repetitive and unusual words
+        repetitive_words = {
+            'leads', 'the', 'and', 'to', 'of', 'a', 'in', 'is', 'it', 'that', 'with', 'as', 'for', 'his', 'this', 'but', 
+            'they', 'have', 'had', 'what', 'said', 'each', 'which', 'she', 'do', 'how', 'their', 'if', 'will', 'up', 
+            'other', 'about', 'out', 'many', 'then', 'them', 'these', 'so', 'some', 'her', 'would', 'make', 'like', 
+            'into', 'him', 'time', 'two', 'more', 'go', 'no', 'way', 'could', 'my', 'than', 'first', 'been', 'call', 
+            'who', 'its', 'now', 'find', 'long', 'down', 'day', 'did', 'get', 'come', 'made', 'may', 'part',
+            'spleenatiue', 'spleenative', 'spleen', 'spleenat', 'spleenati', 'spleenativ', 'spleenatiue', 'spleenatiues',
+            'spleenatiue', 'spleenatiue', 'spleenatiue', 'spleenatiue', 'spleenatiue', 'spleenatiue', 'spleenatiue'
+        }
         
-        # Try to find a good prediction
+        # Try to find a good prediction from top 5
         for idx in top_indices:
             for word, index in tokenizer.word_index.items():
                 if index == idx:
-                    # Avoid repetitive words if possible
-                    if word.lower() not in repetitive_words or len(top_indices) == 1:
+                    # Avoid repetitive words and unusual words
+                    if word.lower() not in repetitive_words:
                         return word
         
-        # If all top predictions are repetitive, try rule-based prediction
+        # If all top predictions are repetitive, use rule-based prediction
         return rule_based_prediction(text, tokenizer)
                 
         return None
@@ -352,8 +360,6 @@ def rule_based_prediction(text, tokenizer):
         return "the"
     elif text_lower.endswith("for"):
         return "the"
-    elif text_lower.endswith("to"):
-        return "the"
     elif text_lower.endswith("a"):
         return "time"
     elif text_lower.endswith("is"):
@@ -396,44 +402,6 @@ def rule_based_prediction(text, tokenizer):
         return "the"
     elif text_lower.endswith("be"):
         return "the"
-    elif text_lower.endswith("being"):
-        return "the"
-    elif text_lower.endswith("been"):
-        return "the"
-    elif text_lower.endswith("am"):
-        return "the"
-    elif text_lower.endswith("is"):
-        return "the"
-    elif text_lower.endswith("are"):
-        return "the"
-    elif text_lower.endswith("was"):
-        return "the"
-    elif text_lower.endswith("were"):
-        return "the"
-    elif text_lower.endswith("will"):
-        return "be"
-    elif text_lower.endswith("shall"):
-        return "be"
-    elif text_lower.endswith("can"):
-        return "not"
-    elif text_lower.endswith("may"):
-        return "be"
-    elif text_lower.endswith("must"):
-        return "be"
-    elif text_lower.endswith("should"):
-        return "be"
-    elif text_lower.endswith("would"):
-        return "be"
-    elif text_lower.endswith("could"):
-        return "be"
-    elif text_lower.endswith("might"):
-        return "be"
-    elif text_lower.endswith("had"):
-        return "been"
-    elif text_lower.endswith("have"):
-        return "been"
-    elif text_lower.endswith("has"):
-        return "been"
     else:
         return "the"  # Default fallback
 
