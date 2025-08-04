@@ -184,6 +184,11 @@ def load_model_and_tokenizer():
             model.add(Dense(3000, activation='softmax'))
             
             model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+            
+            # Build the model to define input shape
+            dummy_input = np.zeros((1, 10))  # Create dummy input with shape (batch_size, input_length)
+            model.predict(dummy_input, verbose=0)
+            
             st.success("✅ Model recreated successfully!")
             
         except Exception as recreate_error:
@@ -242,6 +247,11 @@ if model is None or tokenizer is None:
 # Function to predict the next word
 def predict_next_word(model, tokenizer, text, max_sequence_len):
     try:
+        # Check if model has proper input shape
+        if not hasattr(model, 'input_shape') or model.input_shape is None:
+            st.error("❌ Model doesn't have a defined input shape. Using default sequence length.")
+            max_sequence_len = 10  # Use default sequence length
+        
         token_list = tokenizer.texts_to_sequences([text])[0]
         if len(token_list) >= max_sequence_len:
             token_list = token_list[-(max_sequence_len-1):]  # Ensure the sequence length matches max_sequence_len-1
@@ -285,7 +295,15 @@ if predict_button and input_text.strip():
         if TIME_AVAILABLE:
             time.sleep(0.5)  # Add a small delay for better UX
         
-        max_sequence_len = model.input_shape[1] + 1
+        # Safely get max sequence length
+        try:
+            if hasattr(model, 'input_shape') and model.input_shape is not None:
+                max_sequence_len = model.input_shape[1] + 1
+            else:
+                max_sequence_len = 10  # Default sequence length
+        except:
+            max_sequence_len = 10  # Fallback to default
+        
         next_word = predict_next_word(model, tokenizer, input_text, max_sequence_len)
         
         if next_word:
@@ -352,7 +370,15 @@ for i, (example, description) in enumerate(examples_row1):
         if st.button(f"Try: '{example}'", key=f"row1_example_{i}"):
             # Make prediction directly
             with st.spinner(f"Predicting for: '{example}'"):
-                max_sequence_len = model.input_shape[1] + 1
+                # Safely get max sequence length
+                try:
+                    if hasattr(model, 'input_shape') and model.input_shape is not None:
+                        max_sequence_len = model.input_shape[1] + 1
+                    else:
+                        max_sequence_len = 10  # Default sequence length
+                except:
+                    max_sequence_len = 10  # Fallback to default
+                
                 next_word = predict_next_word(model, tokenizer, example, max_sequence_len)
                 
                 if next_word:
@@ -368,7 +394,15 @@ for i, (example, description) in enumerate(examples_row2):
         if st.button(f"Try: '{example}'", key=f"row2_example_{i}"):
             # Make prediction directly
             with st.spinner(f"Predicting for: '{example}'"):
-                max_sequence_len = model.input_shape[1] + 1
+                # Safely get max sequence length
+                try:
+                    if hasattr(model, 'input_shape') and model.input_shape is not None:
+                        max_sequence_len = model.input_shape[1] + 1
+                    else:
+                        max_sequence_len = 10  # Default sequence length
+                except:
+                    max_sequence_len = 10  # Fallback to default
+                
                 next_word = predict_next_word(model, tokenizer, example, max_sequence_len)
                 
                 if next_word:
@@ -419,7 +453,15 @@ with st.form("custom_examples"):
             if TIME_AVAILABLE:
                 time.sleep(0.5)
             
-            max_sequence_len = model.input_shape[1] + 1
+            # Safely get max sequence length
+            try:
+                if hasattr(model, 'input_shape') and model.input_shape is not None:
+                    max_sequence_len = model.input_shape[1] + 1
+                else:
+                    max_sequence_len = 10  # Default sequence length
+            except:
+                max_sequence_len = 10  # Fallback to default
+            
             next_word = predict_next_word(model, tokenizer, custom_input, max_sequence_len)
             
             if next_word:
@@ -450,7 +492,15 @@ if st.button("🎭 Show Hamlet Style Predictions"):
     
     for phrase in demo_phrases:
         with st.spinner(f"Predicting for: '{phrase}'"):
-            max_sequence_len = model.input_shape[1] + 1
+            # Safely get max sequence length
+            try:
+                if hasattr(model, 'input_shape') and model.input_shape is not None:
+                    max_sequence_len = model.input_shape[1] + 1
+                else:
+                    max_sequence_len = 10  # Default sequence length
+            except:
+                max_sequence_len = 10  # Fallback to default
+            
             next_word = predict_next_word(model, tokenizer, phrase, max_sequence_len)
             
             if next_word:
@@ -478,7 +528,15 @@ if st.button("📊 Show Model Performance"):
     total_predictions = 0
     
     for input_phrase, expected_word in test_cases:
-        max_sequence_len = model.input_shape[1] + 1
+        # Safely get max sequence length
+        try:
+            if hasattr(model, 'input_shape') and model.input_shape is not None:
+                max_sequence_len = model.input_shape[1] + 1
+            else:
+                max_sequence_len = 10  # Default sequence length
+        except:
+            max_sequence_len = 10  # Fallback to default
+        
         predicted_word = predict_next_word(model, tokenizer, input_phrase, max_sequence_len)
         
         if predicted_word:
